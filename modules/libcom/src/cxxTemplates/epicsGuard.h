@@ -23,11 +23,30 @@
 #   include <cassert>
 #endif
 
+#if __cpp_concepts
+
+#include <concepts>
+
+template<typename T>
+concept EPICS_MUTEX_LIKE = requires(T a)
+{
+    { a.lock() };
+    { a.unlock() };
+    { a.trylock() } -> std::same_as<bool>;
+    { a.show(unsigned()) };
+};
+
+#else
+
+#define EPICS_MUTEX_LIKE class
+
+#endif
+
 /*
  *  Author: Jeffrey O. Hill
  */
 
-template < class T > class epicsGuardRelease;
+template < EPICS_MUTEX_LIKE T > class epicsGuardRelease;
 
 /*!
  * \brief Provides an RAII style lock/unlock of a mutex.
@@ -49,7 +68,7 @@ template < class T > class epicsGuardRelease;
  * printf("mutex is unlocked\n");
  * \endcode
  **/
-template < class T >
+template < EPICS_MUTEX_LIKE T >
 class epicsGuard {
 public:
     typedef epicsGuardRelease<T> release_t;
@@ -98,7 +117,7 @@ private:
  * \endcode
  *
  */
-template < class T >
+template < EPICS_MUTEX_LIKE T >
 class epicsGuardRelease {
 public:
     typedef epicsGuard<T> guard_t;
@@ -136,27 +155,27 @@ public:
     void show ( unsigned level ) const;
 };
 
-template < class T >
+template < EPICS_MUTEX_LIKE T >
 inline epicsGuard < T > :: epicsGuard ( T & mutexIn ) :
     _pTargetMutex ( & mutexIn )
 {
     _pTargetMutex->lock ();
 }
 
-template < class T >
+template < EPICS_MUTEX_LIKE T >
 inline epicsGuard < T > :: ~epicsGuard ()
 {
     _pTargetMutex->unlock ();
 }
 
-template < class T >
+template < EPICS_MUTEX_LIKE T >
 inline void epicsGuard < T > :: assertIdenticalMutex (
     const T & mutexToVerify ) const
 {
     assert ( _pTargetMutex == & mutexToVerify );
 }
 
-template < class T >
+template < EPICS_MUTEX_LIKE T >
 inline epicsGuardRelease < T > ::
     epicsGuardRelease ( epicsGuard<T> & guardIn ) :
     _guard ( guardIn ),
@@ -172,7 +191,7 @@ inline epicsGuardRelease < T > ::
     _pTargetMutex->unlock ();
 }
 
-template < class T >
+template < EPICS_MUTEX_LIKE T >
 inline epicsGuardRelease < T > :: ~epicsGuardRelease ()
 {
     _pTargetMutex->lock ();
