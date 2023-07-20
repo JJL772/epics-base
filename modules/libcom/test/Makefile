@@ -44,6 +44,14 @@ epicsCalcTest_SRCS += epicsCalcTest.cpp
 testHarness_SRCS += epicsCalcTest.cpp
 TESTS += epicsCalcTest
 
+
+TESTPROD_HOST += epicsCalcFuzz
+epicsCalcFuzz_SRCS += epicsCalcFuzz.cpp
+epicsCalcFuzz_CFLAGS += -fsanitize=fuzzer
+epicsCalcFuzz_LDFLAGS += -fsanitize=fuzzer
+testHarness_SRCS += epicsCalcFuzz.cpp
+TESTS += epicsCalcFuzz
+
 TESTPROD_HOST += epicsAlgorithmTest
 epicsAlgorithmTest_SRCS += epicsAlgorithmTest.cpp
 testHarness_SRCS += epicsAlgorithmTest.cpp
