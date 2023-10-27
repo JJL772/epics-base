@@ -12,9 +12,7 @@
 #include <netinet/in.h>
 #include <fcntl.h>
 #include <unistd.h>
-#ifdef RTEMS_LEGACY_STACK
 #include <rtems/rtems_bsdnet.h>
-#endif
 #include <bsp.h>
 #include <string.h>
 #include <ctype.h>
