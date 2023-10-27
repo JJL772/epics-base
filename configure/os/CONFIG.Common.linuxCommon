@@ -42,6 +42,9 @@ LDLIBS_READLINE = -lreadline
 LDLIBS_READLINE_NCURSES = -lreadline -lncurses
 LDLIBS_READLINE_CURSES = -lreadline -lcurses
 
+# Linux targets support external ELF debug symbols
+SUPPORTS_EXTERNAL_DEBUG_SYMBOLS = YES
+
 #--------------------------------------------------
 # Allow site overrides
 -include $(CONFIG)/os/CONFIG_SITE.Common.linuxCommon

@@ -126,6 +126,7 @@ CROSS_OPT=YES
 HOST_WARN=YES
 CROSS_WARN=YES
 GNU=NO
+DEBUG_SYMBOLS=NO
 
 #-------------------------------------------------------
 # Run checkRelease in $(TOP)/configure/O.*
@@ -151,6 +152,8 @@ BUILDLIB_SUFFIX_YES = $(DLLSTUB_SUFFIX)
 BUILDLIB_SUFFIX_NO  = $(LIB_SUFFIX)
 BUILDLIB_PREFIX = $(BUILDLIB_PREFIX_$(SHARED_LIBRARIES))
 BUILDLIB_SUFFIX = $(BUILDLIB_SUFFIX_$(SHARED_LIBRARIES))
+
+DEBUG_SUFFIX =
 
 #--------------------------------------------------
 # vpath directories
@@ -178,9 +181,13 @@ SRC_INCLUDES = $(addprefix -I, $(COMMON_DIR) $(wildcard $(ALL_SRC_DIRS)))
 OBJSNAME = $(addsuffix $(OBJ),$(basename $(OBJS)))
 PRODNAME = $(addsuffix $(EXE),$(basename $(PROD)))
 TESTPRODNAME = $(addsuffix $(EXE),$(basename $(TESTPROD)))
+TESTPRODDBGNAME = $(addsuffix $(EXE),$(basename $(TESTPROD)))$(DEBUG_SUFFIX)
+PRODDBGNAME = $(addsuffix $(EXE),$(basename $(PROD)))$(DEBUG_SUFFIX)
 
 SHRLIBNAME = $(SHRLIBNAME_$(SHARED_LIBRARIES))
 TESTSHRLIBNAME = $(TESTSHRLIBNAME_$(SHARED_LIBRARIES))
+SHRLIBDBGNAME = $(SHRLIBDBGNAME_$(DEBUG_SYMBOLS))
+TESTSHRLIBNAME = $(TESTSHRLIBDBGNAME_$(DEBUG_SYMBOLS))
 
 #--------------------------------------------------
 # obj files
@@ -419,6 +426,15 @@ INSTALL_CONFIGS = $(CONFIGS:%= $(INSTALL_CONFIG)/%)
 
 INSTALL_BIN_INSTALLS = $(addprefix $(INSTALL_BIN)/,$(notdir $(BIN_INSTALLS)))
 INSTALL_LIB_INSTALLS = $(addprefix $(INSTALL_LIB)/,$(notdir $(LIB_INSTALLS)))
+
+# Install debug symbols
+ifeq ($(DEBUG_SYMBOLS),YES)
+ifeq ($(SUPPORTS_EXTERNAL_DEBUG_SYMBOLS),YES)
+INSTALL_PROD += $(PRODDBGNAME:%= $(INSTALL_BIN)/%)
+INSTALL_SHRLIBS += $(SHRLIBDBGNAME:%=$(INSTALL_SHRLIB)/%)
+INSTALL_LOADABLE_SHRLIBS += $(LOADABLE_SHRLIBDBGNAME:%=$(INSTALL_SHRLIB)/%)
+endif
+endif
 
 #---------------------------------------------------------------
 # Installed file permissions
