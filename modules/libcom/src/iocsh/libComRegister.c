@@ -10,6 +10,7 @@
 \*************************************************************************/
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "iocsh.h"
 #include "asLib.h"
@@ -27,6 +28,13 @@
 #include "epicsGeneralTime.h"
 #include "freeList.h"
 #include "libComRegister.h"
+
+struct dirStackEntry {
+    ELLNODE node;
+    char path[PATH_MAX];
+};
+
+static ELLLIST dirStack = ELLLIST_INIT;
 
 /* Register the PWD environment variable when the cd IOC shell function is
  * registered. This variable contains the current directory path.
@@ -470,6 +478,47 @@ static void installLastResortEventProviderCallFunc(const iocshArgBuf *args)
     installLastResortEventProvider();
 }
 
+/* pushd */
+static const iocshArg pushdArg0 = {"dir", iocshArgString};
+static const iocshArg* const pushdArgs[1] = {&pushdArg0};
+static const iocshFuncDef pushdFuncDef = {"pushd", 1, pushdArgs,
+                                         "Pushes the current directory to the directory stack and changes to the specified directory"};
+
+static void pushdFunc(const iocshArgBuf* args)
+{
+    char cwd[PATH_MAX];
+    getcwd(cwd, sizeof(cwd));
+
+    if (iocshSetError(chdir(args[0].sval)) != 0) {
+        fprintf(stderr, "Invalid directory path, ignored\n");
+    }
+    else {
+        struct dirStackEntry* e = calloc(1, sizeof(struct dirStackEntry));
+        strncpy(e->path, cwd, sizeof(e->path)-1);
+        ellAdd(&dirStack, &e->node);
+    }
+}
+
+/* popd */
+static const iocshFuncDef popdFuncDef = {"popd", 1, pushdArgs,
+                                         "Pops the top off of the directory stack and changes to that directory"};
+
+static void popdFunc(const iocshArgBuf* args)
+{
+    if (ellCount(&dirStack) <= 0) {
+        fprintf(stderr, "Directory stack is empty.\n");
+        return;
+    }
+
+    struct dirStackEntry* e = (struct dirStackEntry*)ellPop(&dirStack);
+    if (iocshSetError(chdir(e->path)) != 0) {
+        fprintf(stderr, "Invalid directory path, ignored\n");
+    }
+    free(e);
+}
+
+
+
 static iocshVarDef comDefs[] = {
     { "asCheckClientIP", iocshArgInt, 0 },
     { "freeListBypass", iocshArgInt, 0 },
@@ -510,6 +559,9 @@ void epicsStdCall libComRegister(void)
 
     iocshRegister(&generalTimeReportFuncDef,generalTimeReportCallFunc);
     iocshRegister(&installLastResortEventProviderFuncDef, installLastResortEventProviderCallFunc);
+
+    iocshRegister(&pushdFuncDef, pushdFunc);
+    iocshRegister(&popdFuncDef, popdFunc);
 
     comDefs[0].pval = &asCheckClientIP;
     comDefs[1].pval = &freeListBypass;
