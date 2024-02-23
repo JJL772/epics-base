@@ -100,6 +100,7 @@ epicsEventId 	dhcpDone;
 char rtemsInit_NTP_server_ip[16] = "";
 char bootp_server_name_init[128] = "1001.1001@10.0.5.1:/epics";
 char bootp_boot_file_name_init[128] = "/epics/myExample/bin/RTEMS-beatnik/myExample.boot";
+char bootp_cmdline_init[] __attribute__((weak));
 char bootp_cmdline_init[128] = "/epics/myExample/iocBoot/iocmyExample/st.cmd";
 
 /* TODO check rtems_bsdnet_bootp_cmdline */
