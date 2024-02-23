@@ -29,6 +29,15 @@
 #include "freeList.h"
 #include "libComRegister.h"
 
+#ifdef _WIN32
+#include <direct.h>
+#define mkdir _mkdir
+#else
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#endif
+
 struct dirStackEntry {
     ELLNODE node;
     char path[PATH_MAX];
@@ -119,6 +128,47 @@ static void chdirCallFunc(const iocshArgBuf *args)
     } else {
         updatePWD();
     }
+}
+
+/* mkdir */
+static const iocshArg mkdirArg0 = { "directory name", iocshArgString };
+static const iocshArg * const mkdirArgs[1] = { &mkdirArg0 };
+static const iocshFuncDef mkdirFuncDef = { "mkdir", 1, mkdirArgs, "Create a directory" };
+static void mkdirCallFunc(const iocshArgBuf* args)
+{
+    int err = 0;
+    if (args[0].sval == NULL || (err=mkdir(args[0].sval, 0644)) != 0) {
+        if (err) {
+            iocshSetError(err);
+            fprintf(stderr, "mkdir failed: %s\n", strerror(err));
+        }
+        else
+            fprintf(stderr, "No path provided, ignored\n");
+    }
+}
+
+/* ls */
+static const iocshArg lsArg0 = { "directory name", iocshArgString };
+static const iocshArg * const lsArgs[1] = { &lsArg0 };
+static const iocshFuncDef lsFuncDef = { "ls", 1, lsArgs, "List files in a directory" };
+static void lsCallFunc(const iocshArgBuf* args)
+{
+    const char* dirp = args[0].sval;
+    char dir[PATH_MAX];
+    if (!dirp)
+        dirp = getcwd(dir, sizeof(dir));
+
+    DIR* p = opendir(dirp);
+    if (!p) {
+        fprintf(stderr, "Unable to open directory '%s'", dirp);
+        return;
+    }
+
+    struct dirent* de = NULL;
+    while ((de = readdir(p)))
+        printf(" %s\n", de->d_name);
+
+    closedir(p);
 }
 
 /* print current working directory */
@@ -562,6 +612,9 @@ void epicsStdCall libComRegister(void)
 
     iocshRegister(&pushdFuncDef, pushdFunc);
     iocshRegister(&popdFuncDef, popdFunc);
+
+    iocshRegister( &mkdirFuncDef, mkdirCallFunc );
+    iocshRegister( &lsFuncDef, lsCallFunc );
 
     comDefs[0].pval = &asCheckClientIP;
     comDefs[1].pval = &freeListBypass;
