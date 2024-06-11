@@ -71,7 +71,7 @@ static void
 splitNfsMountPath(char *nfsString)
 {
     char *cp2, *cp3;
-
+	printf("splitNfsMountPath: %s\n", nfsString);
     if (nfsString == NULL)
         return;
     if (((cp2 = strchr(nfsString, ':')) != NULL)
@@ -88,6 +88,7 @@ splitNfsMountPath(char *nfsString)
             env_nfsMountPoint = cp3;
         }
     }
+	printf("nfsServer=%s, nfsPath=%s, nfsMountPath=%s\n", env_nfsServer, env_nfsPath, env_nfsMountPoint);
 }
 
 #if defined(HAVE_MOTLOAD)
@@ -210,7 +211,7 @@ setBootConfigFromNVRAM(void)
         rtems_bsdnet_bootp_boot_file_name = motScriptParm(mot_script_boot, 'f');
     rtems_bsdnet_bootp_cmdline = gev("epics-script", nvp);
     splitRtemsBsdnetBootpCmdline();
-    splitNfsMountPath(gev("epics-nfsmount", nvp));
+    splitNfsMountPath(gev("BP_FILE", nvp));
     rtems_bsdnet_config.ntp_server[0] = gev("epics-ntpserver", nvp);
     if (rtems_bsdnet_config.ntp_server[0] == NULL)
         rtems_bsdnet_config.ntp_server[0] = rtems_bsdnet_bootp_server_name;

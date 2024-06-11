@@ -101,7 +101,7 @@ char rtemsInit_NTP_server_ip[16] = "";
 char bootp_server_name_init[128] = "1001.1001@10.0.5.1:/epics";
 char bootp_boot_file_name_init[128] = "/epics/myExample/bin/RTEMS-beatnik/myExample.boot";
 char bootp_cmdline_init[] __attribute__((weak));
-char bootp_cmdline_init[128] = "/epics/myExample/iocBoot/iocmyExample/st.cmd";
+char bootp_cmdline_init[128] = "/data/st.cmd";
 
 /* TODO check rtems_bsdnet_bootp_cmdline */
 #ifndef RTEMS_LEGACY_STACK
@@ -117,6 +117,8 @@ char *rtems_bsdnet_bootp_cmdline = bootp_cmdline_init;
 //void tzset(void);
 int fileno(FILE *);
 int main(int argc, char **argv);
+
+static void rtems_panic_shell(void);
 
 static void
 logReset (void)
@@ -145,6 +147,7 @@ logReset (void)
 static void
 delayedPanic (const char *msg)
 {
+	rtems_panic_shell();
     rtems_task_wake_after (rtems_clock_get_ticks_per_second());
     rtems_task_wake_after (rtems_clock_get_ticks_per_second());
     rtems_panic ("%s", msg);
@@ -266,7 +269,7 @@ initialize_local_filesystem(char **argv)
 
 #ifndef OMIT_NFS_SUPPORT
 int
-nfsMount(char *uidhost, char *path, char *mntpoint)
+nfsMount(char *uidhost, char *path, char *mntpoint, char *opts)
 {
     int   devl = strlen(uidhost) + strlen(path) + 2;
     char *dev;
@@ -280,7 +283,7 @@ nfsMount(char *uidhost, char *path, char *mntpoint)
     printf("Mount %s on %s\n", dev, mntpoint);
     rval = mount_and_make_target_path (
         dev, mntpoint, RTEMS_FILESYSTEM_TYPE_NFS,
-        RTEMS_FILESYSTEM_READ_WRITE, NULL );
+        RTEMS_FILESYSTEM_READ_WRITE, opts );
    if(rval)
       perror("mount failed");
     free(dev);
@@ -414,7 +417,7 @@ initialize_remote_filesystem(char **argv, int hasLocalFilesystem)
     }
     errlogPrintf("nfsMount(\"%s\", \"%s\", \"%s\")\n",
                  server_name, server_path, mount_point);
-    nfsMount(server_name, server_path, mount_point);
+    nfsMount(server_name, server_path, mount_point, NULL);
 #endif
 }
 
@@ -593,9 +596,10 @@ static void heapSpaceCallFunc(const iocshArgBuf *args)
 static const iocshArg nfsMountArg0 = { "[uid.gid@]host",iocshArgString};
 static const iocshArg nfsMountArg1 = { "server path",iocshArgString};
 static const iocshArg nfsMountArg2 = { "mount point",iocshArgString};
-static const iocshArg * const nfsMountArgs[3] = {&nfsMountArg0,&nfsMountArg1,
-                                                 &nfsMountArg2};
-static const iocshFuncDef nfsMountFuncDef = {"nfsMount",3,nfsMountArgs
+static const iocshArg nfsMountArg3 = { "options",iocshArgString};
+static const iocshArg * const nfsMountArgs[4] = {&nfsMountArg0,&nfsMountArg1,
+                                                 &nfsMountArg2, &nfsMountArg3};
+static const iocshFuncDef nfsMountFuncDef = {"nfsMount",4,nfsMountArgs
 #ifdef IOCSHFUNCDEF_HAS_USAGE
                                              , "mount nfs drive"
 #endif
@@ -612,7 +616,7 @@ static void nfsMountCallFunc(const iocshArgBuf *args)
         }
         *cp = '/';
     }
-    nfsMount(args[0].sval, args[1].sval, args[2].sval);
+    nfsMount(args[0].sval, args[1].sval, args[2].sval, args[3].sval);
 }
 #endif
 
@@ -723,6 +727,7 @@ printf("stderr: fileno: %d, ttyname: %s\n", fileno(stderr), ttyname(fileno(stder
 static void
 exitHandler(void)
 {
+	rtems_panic_shell();
     rtems_shutdown_executive(0);
 }
 
@@ -910,6 +915,52 @@ telnet_pseudoIocsh(char *name, __attribute__((unused))void *arg)
 
 #define SHELL_ENTRY telnet_pseudoIocsh
 
+static void
+rtems_iocsh_cmd(int argc, char** argv)
+{
+	if (argc > 1)
+		iocshCmd(argv[1]);
+	else
+		printf("usage: iocshCmd <command>\n");
+}
+
+static void
+rtems_iocsh(int argc, char** argv)
+{
+	iocsh(argc > 1 ? argv[1] : NULL);
+}
+
+rtems_shell_cmd_t rtems_iocsh_reg =
+{
+	.command = rtems_iocsh,
+	.topic = "epics",
+	.name = "iocsh"
+};
+
+rtems_shell_cmd_t rtems_iocsh_cmd_reg =
+{
+	.command = rtems_iocsh_cmd,
+	.topic = "epics",
+	.name = "iocshCmd",
+};
+
+static void
+registerRTEMSCommands()
+{
+	rtems_shell_add_cmd_struct(&rtems_iocsh_cmd_reg);
+	rtems_shell_add_cmd_struct(&rtems_iocsh_reg);
+}
+
+static void
+rtems_panic_shell()
+{
+// Start an rtems shell before main, for debugging RTEMS system issues
+    rtems_shell_init("SHLL", RTEMS_MINIMUM_STACK_SIZE * 4,
+                     100, "/dev/console",
+                     false, true,
+                     NULL);
+}
+
 /*
  *  Telnet daemon configuration
  * 0 or NULL for most fields in this struct indicate default values to RTEMS.
@@ -940,6 +991,8 @@ POSIX_Init ( void *argument __attribute__((unused)))
     char timeBuff[100];
 
     initConsole ();
+
+	registerRTEMSCommands();
 
     /*
      * Use BSP-supplied time of day if available otherwise supply default time.
@@ -1148,6 +1201,10 @@ POSIX_Init ( void *argument __attribute__((unused)))
    // printf (" telnetd initialized with result %d\n", result);
 #endif
 
+	//8412.2211@172.23.20.118
+	//nfsMount("172.23.20.118", "/vol/vol1/g.lcls/epics/ioc/data/ioc-b084-rf02", "/data");
+	//nfsMount("172.23.20.118", "/vol/vol1/g.lcls/epics/iocCommon/ioc-b084-rf02", "/epics");
+
     printf ("***** Preparing EPICS application *****\n");
     iocshRegisterRTEMS ();
     set_directory (argv[1]);
@@ -1155,7 +1212,6 @@ POSIX_Init ( void *argument __attribute__((unused)))
     atexit(exitHandler);
     errlogFlush();
     printf ("***** Starting EPICS application *****\n");
-
 
 #ifndef RTEMS_LEGACY_STACK
     // switch OS to async logging
