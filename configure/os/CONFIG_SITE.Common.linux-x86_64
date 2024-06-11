@@ -39,5 +39,10 @@
 # (e.g. generic, native, core2, nocona, k8, opteron, athlon64, barcelona etc.)
 GNU_TUNE_CFLAGS = -mtune=generic
 
+CMPLR_CLASS=clang
+CC=clang
+CCC=clang++
+GNU=NO
+
 # Developers using a suitable compiler may enable its address sanitizer:
 #ENABLE_ASAN = YES
