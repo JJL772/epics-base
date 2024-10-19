@@ -96,7 +96,9 @@
 # Which target architectures to cross-compile for.
 #  Definitions in configure/os/CONFIG_SITE.<host>.Common
 #  may override this setting.
-CROSS_COMPILER_TARGET_ARCHS=
+ifeq ($(EPICS_HOST_ARCH),linux-x86_64)
+CROSS_COMPILER_TARGET_ARCHS=RTEMS-uC5282 RTEMS-beatnik RTEMS-mvme3100
+endif
 
 # If only some of your host architectures can compile the
 #  above CROSS_COMPILER_TARGET_ARCHS specify those host

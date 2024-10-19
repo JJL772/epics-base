@@ -24,9 +24,13 @@
 #RTEMS_VERSION = 5
 #RTEMS_BASE = /usr/local/vw/rtems/rtems-5.1
 
+USER=$(shell whoami)
+RTEMS_BASE = /home/$(USER)/dev/rtems/6.0/target/rtems
+RTEMS_VERSION = 6
+
 # Cross-compile toolchain in $(RTEMS_TOOLS)/bin
 #
-RTEMS_TOOLS = $(RTEMS_BASE)
+RTEMS_TOOLS = $(RTEMS_BASE)/../../host/$(EPICS_HOST_ARCH)
 
 # Link Generic System loadable objects instead of full executable.
 #
@@ -46,3 +50,5 @@ USE_GESYS = NO
 COMMANDLINE_LIBRARY = EPICS
 #COMMANDLINE_LIBRARY = LIBTECLA
 #COMMANDLINE_LIBRARY = READLINE
+
+RTEMS_BSD_NETWORKING=yes
