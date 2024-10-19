@@ -9,6 +9,11 @@ RTEMS_BSP = uC5282
 RTEMS_TARGET_CPU = m68k
 ARCH_DEP_CFLAGS += -DMY_DO_BOOTP=NULL
 
+# Workaround for BUG in GCC toolchain. This is not defined properly for uC5282 with -std=c++11 or higher. Without this,
+# most of the C math library prototypes are not defined.
+ARCH_DEP_CFLAGS += -D_LDBL_EQ_DBL=1
+ARCH_DEP_CXXFLAGS += -D_LDBL_EQ_DBL=1
+
 # Hopefully a temporary fix:
 ARCH_DEP_CXXFLAGS_5 = -std=c++98
 ARCH_DEP_CXXFLAGS += $(ARCH_DEP_CXXFLAGS_$(RTEMS_VERSION))
