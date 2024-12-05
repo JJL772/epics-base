@@ -178,7 +178,7 @@ extern void *POSIX_Init(void *argument);
  * The new general time support makes including the RTC driver less important.
  */
 #if !defined(mpc604) && !defined(__mc68040__) && !defined(__mcf5200__) && \
-    !defined(mpc7455) && !defined(__arm__)  && !defined(__nios2__)
+    !defined(mpc7455) && !defined(__arm__)  && !defined(__nios2__) && !defined(BSP_psim)
     /* don't have RTC code */
 #define CONFIGURE_APPLICATION_NEEDS_RTC_DRIVER
 #endif
