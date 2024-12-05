@@ -8,7 +8,10 @@ GNU_TARGET = aarch64-linux-gnu
 
 # Set GNU tools install path
 # Examples is the installation at the APS:
-GNU_DIR = /usr/local/Xilinx/SDK/2018.3/gnu/aarch64/lin/aarch64-linux
+#GNU_DIR = /usr/local/Xilinx/SDK/2018.3/gnu/aarch64/lin/aarch64-linux
+GNU_DIR=/usr
+
+COMMANDLINE_LIBRARY=EPICS
 
 # If cross-building shared libraries and the paths on the target machine are
 # different than on the build host, you should uncomment the lines below to
