@@ -1,0 +1,12 @@
+#
+# Target for PSIM (PowerPC Simulator) that is built into GDB
+# Author: Jeremy Lorelli
+#
+EXE = .elf
+RTEMS_BSP = psim
+RTEMS_TARGET_CPU = powerpc
+GNU_TARGET = powerpc-rtems
+ARCH_DEP_CFLAGS += -DMY_DO_BOOTP=NULL
+
+include $(CONFIG)/os/CONFIG.Common.RTEMS
+
