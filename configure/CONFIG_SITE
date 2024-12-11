@@ -97,7 +97,7 @@
 #  Definitions in configure/os/CONFIG_SITE.<host>.Common
 #  may override this setting.
 ifeq ($(EPICS_HOST_ARCH),linux-x86_64)
-CROSS_COMPILER_TARGET_ARCHS=RTEMS-uC5282 RTEMS-beatnik RTEMS-mvme3100 linux-aarch64 RTEMS-psim RTEMS-xilinx_zynq_a9_qemu
+CROSS_COMPILER_TARGET_ARCHS=RTEMS-uC5282 RTEMS-beatnik RTEMS-mvme3100 RTEMS-psim RTEMS-xilinx_zynq_a9_qemu
 endif
 
 # If only some of your host architectures can compile the
