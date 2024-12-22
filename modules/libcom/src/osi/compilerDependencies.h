@@ -52,6 +52,45 @@
 #   define EPICS_UNUSED
 #endif
 
+/*
+ * Clang fortify diagnostics
+ */
+#ifndef EPICS_DIAGNOSE_AS
+#   define EPICS_DIAGNOSE_AS(...)
+#endif
+
+#ifndef EPICS_DIAGNOSE_AS_STRNCASECMP
+#   define EPICS_DIAGNOSE_AS_STRNCASECMP(_1, _2, _3)
+#endif
+
+#ifndef EPICS_DIAGNOSE_AS_STRDUP
+#   define EPICS_DIAGNOSE_AS_STRDUP(_1)
+#endif
+
+#ifndef EPICS_DIAGNOSE_AS_STRNDUP
+#   define EPICS_DIAGNOSE_AS_STRNDUP(_1, _2)
+#endif
+
+#ifndef EPICS_DIAGNOSE_AS_SNPRINTF
+#   define EPICS_DIAGNOSE_AS_SNPRINTF(_1, _2_, _3)
+#endif
+
+#ifndef EPICS_DIAGNOSE_AS_VSNPRINTF
+#   define EPICS_DIAGNOSE_AS_VSNPRINTF(_1, _2, _3, _4)
+#endif
+
+#ifndef EPICS_DIAGNOSE_AS_STRCASECMP
+#   define EPICS_DIAGNOSE_AS_STRCASECMP(_1, _2)
+#endif
+
+#ifndef EPICS_DIAGNOSE_AS_PRINTF
+#   define EPICS_DIAGNOSE_AS_PRINTF(_1)
+#endif
+
+#ifndef EPICS_DIAGNOSE_AS_VPRINTF
+#   define EPICS_DIAGNOSE_AS_VPRINTF(_1, _2)
+#endif
+
 #ifndef EPICS_FUNCTION
 #if (defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901)) || (defined(__cplusplus) && __cplusplus>=201103L)
 #  define EPICS_FUNCTION __func__

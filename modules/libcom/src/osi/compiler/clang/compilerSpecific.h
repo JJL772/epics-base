@@ -30,6 +30,48 @@
 /* Expands to a 'const char*' which describes the name of the current function scope */
 #define EPICS_FUNCTION __PRETTY_FUNCTION__
 
+/*
+ * Allows the compiler to apply fortify diagnostics to marked functions.
+ * Introduced in clang 14.
+ * Ref: https://clang.llvm.org/docs/AttributeReference.html#diagnose-as-builtin
+ */
+#if __has_attribute(diagnose_as_builtin)
+#define EPICS_DIAGNOSE_AS(...) __attribute__((diagnose_as_builtin(__VA_ARGS__)))
+
+#if __has_builtin(__builtin_strncasecmp)
+#define EPICS_DIAGNOSE_AS_STRNCASECMP(_1, _2, _3) EPICS_DIAGNOSE_AS(__builtin_strncasecmp, _1, _2, _3)
+#endif
+
+#if __has_builtin(__builtin_strdup)
+#define EPICS_DIAGNOSE_AS_STRDUP(_1) EPICS_DIAGNOSE_AS(__builtin_strdup, _1)
+#endif
+
+#if __has_builtin(__builtin_strndup)
+#define EPICS_DIAGNOSE_AS_STRNDUP(_1, _2) EPICS_DIAGNOSE_AS(__builtin_strndup, _1, _2)
+#endif
+
+#if __has_builtin(__builtin_snprintf)
+#define EPICS_DIAGNOSE_AS_SNPRINTF(_1, _2, _3) EPICS_DIAGNOSE_AS(__builtin_snprintf, _1, _2, _3)
+#endif
+
+#if __has_builtin(__builtin_vsnprintf)
+#define EPICS_DIAGNOSE_AS_VSNPRINTF(_1, _2, _3, _4) EPICS_DIAGNOSE_AS(__builtin_vsnprintf, _1, _2, _3, _4)
+#endif
+
+#if __has_builtin(__builtin_strcasecmp)
+#define EPICS_DIAGNOSE_AS_STRCASECMP(_1, _2) EPICS_DIAGNOSE_AS(__builtin_strcasecmp, _1, _2)
+#endif
+
+#if __has_builtin(__builtin_printf)
+#define EPICS_DIAGNOSE_AS_PRINTF(_1) EPICS_DIAGNOSE_AS(__builtin_printf, _1)
+#endif
+
+#if __has_builtin(__builtin_vprintf)
+#define EPICS_DIAGNOSE_AS_VPRINTF(_1, _2) EPICS_DIAGNOSE_AS(__builtin_vprintf, _1, _2)
+#endif
+
+#endif /* __has_attribute(diagnose_as_builtin) */
+
 #ifdef __cplusplus
 
 /*

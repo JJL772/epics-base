@@ -91,24 +91,28 @@ LIBCOM_API size_t epicsStrnEscapedFromRawSize(const char *buf, size_t len);
  *
  * Implements strcmp from the C standard library, except is case insensitive
  */
+EPICS_DIAGNOSE_AS_STRCASECMP(1, 2)
 LIBCOM_API int epicsStrCaseCmp(const char *s1, const char *s2);
 
 /** \brief Does case-insensitive comparision of two strings
  *
  * Implements strncmp from the C standard library, except is case insensitive
  */
+EPICS_DIAGNOSE_AS_STRNCASECMP(1, 2, 3)
 LIBCOM_API int epicsStrnCaseCmp(const char *s1, const char *s2, size_t len);
 
 /** \brief Duplicates a string
  *
  * Implements strdup from the C standard library.  Calls mallocMustSucceed() to allocate memory
  */
+EPICS_DIAGNOSE_AS_STRDUP(1)
 LIBCOM_API char * epicsStrDup(const char *s);
 
 /** \brief Duplicates a string
  *
  * implements strndup from the C standard library. Calls mallocMustSucceed() to allocate memory
  */
+EPICS_DIAGNOSE_AS_STRNDUP(1, 2)
 LIBCOM_API char * epicsStrnDup(const char *s, size_t len);
 
 /** \brief Prints escaped version of string

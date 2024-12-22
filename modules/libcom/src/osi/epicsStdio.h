@@ -129,6 +129,7 @@ extern "C" {
  * that would be written to `str` if it was large enough to hold them all; the
  * output has been truncated if the return value is `size` or more.
  */
+EPICS_DIAGNOSE_AS_SNPRINTF(1, 2, 3)
 LIBCOM_API int epicsStdCall epicsSnprintf(
     char *str, size_t size, EPICS_PRINTF_FMT(const char *format), ...
 ) EPICS_PRINTF_STYLE(3,4);
@@ -160,6 +161,7 @@ LIBCOM_API int epicsStdCall epicsSnprintf(
  * that would be written to `str` if it was large enough to hold them all; the
  * output has been truncated if the return value is `size` or more.
  */
+EPICS_DIAGNOSE_AS_VSNPRINTF(1, 2, 3, 4)
 LIBCOM_API int epicsStdCall epicsVsnprintf(
     char *str, size_t size, const char *format, va_list ap);
 
@@ -186,8 +188,10 @@ LIBCOM_API void  epicsStdCall epicsSetThreadStdin(FILE *);
 LIBCOM_API void  epicsStdCall epicsSetThreadStdout(FILE *);
 LIBCOM_API void  epicsStdCall epicsSetThreadStderr(FILE *);
 
+EPICS_DIAGNOSE_AS_PRINTF(1)
 LIBCOM_API int epicsStdCall epicsStdoutPrintf(
     const char *pformat, ...) EPICS_PRINTF_STYLE(1,2);
+EPICS_DIAGNOSE_AS_VPRINTF(1, 2)
 LIBCOM_API int epicsStdCall epicsStdoutVPrintf(
     const char *pformat, va_list ap);
 LIBCOM_API int epicsStdCall epicsStdoutPuts(const char *str);
