@@ -12,7 +12,9 @@
 #include <netinet/in.h>
 #include <fcntl.h>
 #include <unistd.h>
+#ifdef RTEMS_LEGACY_STACK
 #include <rtems/rtems_bsdnet.h>
+#endif
 #include <bsp.h>
 #include <string.h>
 #include <ctype.h>
@@ -90,7 +92,7 @@ splitNfsMountPath(char *nfsString)
     }
 }
 
-#if defined(HAVE_MOTLOAD)
+#if defined(HAVE_MOTLOAD) && defined(RTEMS_LEGACY_STACK)
 
 /*
  * Motorola MOTLOAD NVRAM Access
