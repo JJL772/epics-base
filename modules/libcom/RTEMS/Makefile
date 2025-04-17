@@ -33,7 +33,7 @@ rtemsCom_SRCS += epicsRtemsInitHookPost.c
 rtemsCom_SRCS += epicsMemFs.c
 rtemsCom_SRCS += epicsNtp.c
 
-ifeq ($(RTEMS_TARGET_CPU),i386)
+ifeq ($(RTEMS_TARGET_CPU),$(filter $(RTEMS_TARGET_CPU),i386 i586))
 rtemsCom_SRCS += ne2kpci.c
 endif
 

@@ -24,9 +24,12 @@
 #RTEMS_VERSION = 5
 #RTEMS_BASE = /usr/local/vw/rtems/rtems-5.1
 
+RTEMS_BASE=/home/jeremy/dev/rtems/4.10.2/target/rtems_p4
+RTEMS_VERSION = 4
+
 # Cross-compile toolchain in $(RTEMS_TOOLS)/bin
 #
-RTEMS_TOOLS = $(RTEMS_BASE)
+RTEMS_TOOLS = /home/jeremy/dev/rtems/4.10.2/host/amd64_linux26
 
 # Link Generic System loadable objects instead of full executable.
 #
