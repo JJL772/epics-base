@@ -146,6 +146,15 @@ delayedPanic (const char *msg)
 {
     rtems_task_wake_after (rtems_clock_get_ticks_per_second());
     rtems_task_wake_after (rtems_clock_get_ticks_per_second());
+
+    // Give the user a panic shell
+    rtems_shell_init("SHLL", RTEMS_MINIMUM_STACK_SIZE * 4,
+                     100, "/dev/console",
+                     false, true,
+                     NULL);
+
+    while(1) rtems_task_wake_after (rtems_clock_get_ticks_per_second());
+
     rtems_panic ("%s", msg);
 }
 
