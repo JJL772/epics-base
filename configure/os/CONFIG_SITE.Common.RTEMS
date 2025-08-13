@@ -37,7 +37,7 @@ RTEMS_TOOLS = $(RTEMS_BASE)/../../host/$(EPICS_HOST_ARCH)
 # A GeSys object is similar to a shared library.  It can be (un)loaded
 # at runtime by the Generic System loader which is available as a
 # patch against RTEMS.
-USE_GESYS = NO
+USE_GESYS = YES
 
 # If you're using neither BOOTP/DHCP nor FLASH to pick up your IOC
 # network configuration you must uncomment and specify your Internet
