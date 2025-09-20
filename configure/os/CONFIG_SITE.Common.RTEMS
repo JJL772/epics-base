@@ -25,8 +25,8 @@
 #RTEMS_BASE = /usr/local/vw/rtems/rtems-5.1
 
 USER=$(shell whoami)
-RTEMS_BASE = /home/$(USER)/dev/rtems/6.0/target/rtems
-RTEMS_VERSION = 6
+RTEMS_BASE = /home/$(USER)/dev/rtems/7.0/target/rtems
+RTEMS_VERSION = 7
 
 # Cross-compile toolchain in $(RTEMS_TOOLS)/bin
 #
@@ -51,4 +51,3 @@ COMMANDLINE_LIBRARY = EPICS
 #COMMANDLINE_LIBRARY = LIBTECLA
 #COMMANDLINE_LIBRARY = READLINE
 
-RTEMS_BSD_NETWORKING=yes
