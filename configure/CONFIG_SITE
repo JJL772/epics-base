@@ -65,6 +65,7 @@
 #       linux-aarch64           (linux-x86_64 host)
 #       linux-microblaze
 #       linux-xscale_be
+#       linux-amd-aarch64       (linux-x86 or -x86_64 host)
 #       vxWorks-486
 #       vxWorks-pentium
 #       vxWorks-ppc32           (32-bit PowerPC CPUs with full FPU)
