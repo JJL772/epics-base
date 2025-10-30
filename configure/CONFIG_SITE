@@ -98,7 +98,7 @@
 #  Definitions in configure/os/CONFIG_SITE.<host>.Common
 #  may override this setting.
 ifeq ($(EPICS_HOST_ARCH),linux-x86_64)
-CROSS_COMPILER_TARGET_ARCHS=RTEMS-uC5282 RTEMS-beatnik RTEMS-mvme3100 RTEMS-pc686 RTEMS-pc686-qemu
+CROSS_COMPILER_TARGET_ARCHS=RTEMS-uC5282 RTEMS-beatnik RTEMS-mvme3100 RTEMS-pc686 RTEMS-pc686-qemu linux-amd-aarch64
 endif
 
 # If only some of your host architectures can compile the
@@ -124,7 +124,7 @@ SHARED_LIBRARIES=YES
 
 # Build client objects statically.
 #  Must be either YES or NO.
-STATIC_BUILD=NO
+STATIC_BUILD=YES
 
 # Host build optimization.
 #  Must be either YES or NO.
