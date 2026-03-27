@@ -65,7 +65,8 @@
 #       linux-aarch64           (linux-x86_64 host)
 #       linux-microblaze
 #       linux-xscale_be
-#       linux-amd-aarch64       (linux-x86 or -x86_64 host)
+#       linux-amd-aarch64       (linux-x86_64 host)
+#       linux-tdx-aarch64       (linux-x86_64 host)
 #       vxWorks-486
 #       vxWorks-pentium
 #       vxWorks-ppc32           (32-bit PowerPC CPUs with full FPU)
@@ -98,7 +99,17 @@
 #  Definitions in configure/os/CONFIG_SITE.<host>.Common
 #  may override this setting.
 ifeq ($(EPICS_HOST_ARCH),linux-x86_64)
-CROSS_COMPILER_TARGET_ARCHS=RTEMS-uC5282 RTEMS-beatnik RTEMS-mvme3100 RTEMS-pc686 RTEMS-pc686-qemu linux-amd-aarch64
+CROSS_COMPILER_TARGET_ARCHS=RTEMS-uC5282 RTEMS-beatnik RTEMS-mvme3100 RTEMS-pc686 RTEMS-pc686-qemu
+endif
+
+# Only enable if we have the PetaLinux SDK (exported by Yocto) installed
+ifneq ($(wildcard /opt/petalinux/2025.1*),)
+CROSS_COMPILER_TARGET_ARCHS += linux-amd-aarch64
+endif
+
+# Only enable if we have the Toradex SDK (exported by Yocto) installed
+ifneq ($(wildcard /opt/tdx-xwayland/*),)
+CROSS_COMPILER_TARGET_ARCHS += linux-tdx-aarch64
 endif
 
 # If only some of your host architectures can compile the
