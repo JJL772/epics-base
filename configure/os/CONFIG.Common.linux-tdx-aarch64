@@ -1,0 +1,11 @@
+# CONFIG.Common.linux-tdx-aarch64
+#
+# Definitions for linux-tdx-aarch64 target builds
+# Override these settings in CONFIG_SITE.Common.linux-tdx-aarch64
+#-------------------------------------------------------
+
+# Include definitions common to all Linux targets
+include $(CONFIG)/os/CONFIG.Common.linuxCommon
+
+ARCH_CLASS = aarch64
+

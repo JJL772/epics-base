@@ -1,0 +1,43 @@
+# CONFIG.linux-x86_64.linux-tdx-aarch64
+#
+# Definitions for linux-x86_64 host - linux-tdx-aarch64 target builds
+# Sites may override these in CONFIG_SITE.linux-x86_64.linux-tdx-aarch64
+#-------------------------------------------------------
+
+VALID_BUILDS = Ioc Command
+GNU_TARGET = aarch64-tdx-linux
+
+# prefix of compiler tools
+CMPLR_SUFFIX =
+CMPLR_PREFIX = $(addsuffix -,$(GNU_TARGET))
+
+# Sysroot dirs
+SYSROOT_CMPLR = $(YOCTO_SDK)/sysroots/$(YOCTO_HOST_FLAVOR)-linux
+SYSROOT_TARGET = $(YOCTO_SDK)/sysroots/$(YOCTO_FLAVOR)-linux
+
+GNU_BIN = $(SYSROOT_CMPLR)/usr/bin/$(GNU_TARGET)
+
+# Provide a link-time path for readline if needed
+OP_SYS_INCLUDES += $(READLINE_DIR:%=-I%/include)
+READLINE_LDFLAGS = $(READLINE_DIR:%=-L%/lib)
+RUNTIME_LDFLAGS_READLINE_YES_NO = $(READLINE_DIR:%=-Wl,-rpath,%/lib)
+RUNTIME_LDFLAGS += \
+    $(RUNTIME_LDFLAGS_READLINE_$(LINKER_USE_RPATH)_$(STATIC_BUILD))
+SHRLIBDIR_LDFLAGS += $(READLINE_LDFLAGS)
+PRODDIR_LDFLAGS += $(READLINE_LDFLAGS)
+
+# Yocto specific build flags
+OP_SYS_CFLAGS += --sysroot=$(SYSROOT_TARGET)
+OP_SYS_CXXFLAGS += --sysroot=$(SYSROOT_TARGET)
+OP_SYS_LDFLAGS += --sysroot=$(SYSROOT_TARGET)
+
+# Uncomment these if you need them for your cross compiler.
+#OP_SYS_CFLAGS += -mcpu=$(YOCTO_CPU)
+#OP_SYS_CXXFLAGS += -mcpu=$(YOCTO_CPU)
+
+# Library flags
+STATIC_LDFLAGS_YES= -Wl,-Bstatic
+STATIC_LDFLAGS_NO=
+STATIC_LDLIBS_YES= -Wl,-Bdynamic
+STATIC_LDLIBS_NO=
+
