@@ -15,6 +15,7 @@
 #include <stdarg.h>
 
 #include "errlog.h"
+#include "envDefs.h"
 #include "cantProceed.h"
 #include "epicsThread.h"
 #include "epicsStackTrace.h"
@@ -53,6 +54,7 @@ LIBCOM_API void * mallocMustSucceed(size_t size, const char *msg)
 
 LIBCOM_API void cantProceed(const char *msg, ...)
 {
+    int doAbort = 0;
     va_list pvar;
     va_start(pvar, msg);
     if (msg)
@@ -67,6 +69,11 @@ LIBCOM_API void cantProceed(const char *msg, ...)
     errlogFlush();
 
     epicsThreadSleep(1.0);
-    while (1)
-        epicsThreadSuspendSelf();
+
+    if (envGetBoolConfigParam(&EPICS_ABORT_ON_ASSERT, &doAbort) == 0 && doAbort) {
+        abort();
+    } else {
+        while (1)
+            epicsThreadSuspendSelf();
+    }
 }
