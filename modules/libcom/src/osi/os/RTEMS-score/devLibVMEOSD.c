@@ -21,6 +21,7 @@
 #include <epicsInterrupt.h>
 #include <epicsMMIO.h>
 #include <string.h>
+#include <stdlib.h>
 
 #if defined(__PPC__) || defined(__mcf528x__)
 /* EPICS VME support requires various routines to be provided by the
@@ -31,19 +32,23 @@
 #include <bsp/VME.h>
 #endif
 
+struct vmeIsrProxy {
+    struct vmeIsrProxy* next;
+    unsigned vecNum;
+    void(*func)(void*);
+    void* arg;
+}* isrProxies;
 
-typedef void    myISR (void *pParam);
-
-static myISR *isrFetch(unsigned vectorNumber, void **parg);
+static BSP_VME_ISR_t isrFetch(unsigned vectorNumber, void **parg);
 
 /*
  * this routine needs to be in the symbol table
  * for this code to work correctly
  */
-static void unsolicitedHandlerEPICS(int vectorNumber);
+static void unsolicitedHandlerEPICS(void* vectorNumber, unsigned long unused);
 
-static myISR *defaultHandlerAddr[]={
-    (myISR*)unsolicitedHandlerEPICS,
+static BSP_VME_ISR_t defaultHandlerAddr[]={
+    (BSP_VME_ISR_t)unsolicitedHandlerEPICS,
 };
 
 /*
@@ -93,12 +98,12 @@ static long rtemsDevWriteProbe (unsigned wordSize, volatile void *ptr, const voi
 
 static long rtemsDevConnectInterruptVME (
     unsigned vectorNumber,
-    void (*pFunction)(),
+    devLib_ISR_t pFunction,
     void  *parameter);
 
 static long rtemsDevDisconnectInterruptVME (
     unsigned vectorNumber,
-    void (*pFunction)()
+    devLib_ISR_t pFunction
 );
 
 static long rtemsDevEnableInterruptLevelVME (unsigned level);
@@ -133,6 +138,59 @@ rtemsDevInit(void)
     return 0;
 }
 
+/** \brief Finds an ISR proxy entry in the proxy linked list. */
+static struct vmeIsrProxy* findIsrProxy(unsigned vector) {
+    struct vmeIsrProxy* proxy;
+    for (proxy = isrProxies; proxy; proxy = proxy->next) {
+        if (vector == proxy->vecNum)
+            return proxy;
+    }
+    return NULL;
+}
+
+/** \brief Add an ISR proxy to the proxy linked list. */
+static int addIsrProxy(unsigned vector, void* usrArg,
+    void(*pFunc)(void*), struct vmeIsrProxy** out)
+{
+    struct vmeIsrProxy* proxy = calloc(sizeof(struct vmeIsrProxy), 1);
+    if (!proxy) {
+        return S_dev_noMemory;
+    }
+
+    proxy->arg = usrArg;
+    proxy->vecNum = vector;
+    proxy->next = isrProxies;
+    if (out)
+        *out = proxy;
+    isrProxies = proxy;
+    return 0;
+}
+
+/** \brief Delete an entry in the ISR proxy linked list based on its vector number. */
+static int delIsrProxy(unsigned vector) {
+    struct vmeIsrProxy *proxy, *pproxy = NULL;
+    for (proxy = isrProxies; proxy; pproxy = proxy, proxy = proxy->next) {
+        if (proxy->vecNum == vector) {
+            if (pproxy)
+                pproxy->next = proxy->next;
+            if (proxy == isrProxies)
+                isrProxies = proxy->next;
+            free(proxy);
+            return 0;
+        }
+    }
+    return -1;
+}
+
+
+/*
+ * Proxies the ISR through to user code via the user signature.
+ */
+static void isrProxy(void* usrArg, unsigned long vector) {
+    struct vmeIsrProxy* proxy = usrArg;
+    proxy->func(proxy->arg);
+}
+
 /*
  * devConnectInterruptVME
  *
@@ -140,7 +198,7 @@ rtemsDevInit(void)
  */
 static long rtemsDevConnectInterruptVME (
     unsigned vectorNumber,
-    void (*pFunction)(),
+    devLib_ISR_t        pFunction,
     void  *parameter)
 {
     int status;
@@ -149,10 +207,21 @@ static long rtemsDevConnectInterruptVME (
     if (devInterruptInUseVME(vectorNumber)) {
         return S_dev_vectorInUse;
     }
+
+    struct vmeIsrProxy* proxy;
+    status = addIsrProxy(
+        vectorNumber,
+        parameter,
+        pFunction,
+        &proxy);
+    if (status) {
+        return status;
+    }
+
     status = BSP_installVME_isr(
             vectorNumber,
-            pFunction,
-            parameter);
+            isrProxy,
+            proxy);
     if (status) {
         return S_dev_vecInstlFail;
     }
@@ -173,10 +242,10 @@ static long rtemsDevConnectInterruptVME (
  */
 static long rtemsDevDisconnectInterruptVME (
     unsigned vectorNumber,
-    void (*pFunction)()
+    devLib_ISR_t pFunction
 )
 {
-    void (*psub)();
+    BSP_VME_ISR_t psub;
     void  *arg;
     int status;
 
@@ -185,7 +254,7 @@ static long rtemsDevDisconnectInterruptVME (
      * then they are probably disconnecting from the wrong vector
      */
     psub = isrFetch(vectorNumber, &arg);
-    if(psub != pFunction){
+    if((void*)psub != pFunction){
         return S_dev_vectorNotInUse;
     }
 
@@ -195,8 +264,11 @@ static long rtemsDevDisconnectInterruptVME (
         arg) ||
      BSP_installVME_isr(
         vectorNumber,
-        (BSP_VME_ISR_t)unsolicitedHandlerEPICS,
+        unsolicitedHandlerEPICS,
         (void*)vectorNumber);
+
+    delIsrProxy(vectorNumber);
+
     if(status){
         return S_dev_vecInstlFail;
     }
@@ -339,12 +411,12 @@ static long rtemsDevWriteProbe (unsigned wordSize, volatile void *ptr, const voi
 /*
  *      isrFetch()
  */
-static myISR *isrFetch(unsigned vectorNumber, void **parg)
+static BSP_VME_ISR_t isrFetch(unsigned vectorNumber, void **parg)
 {
     /*
      * fetch the handler or C stub attached at this vector
      */
-    return (myISR *) BSP_getVME_isr(vectorNumber,parg);
+    return (BSP_VME_ISR_t) BSP_getVME_isr(vectorNumber,parg);
 }
 
 /*
@@ -353,7 +425,7 @@ static myISR *isrFetch(unsigned vectorNumber, void **parg)
 static int rtemsDevInterruptInUseVME (unsigned vectorNumber)
 {
     int i;
-    myISR *psub;
+    BSP_VME_ISR_t psub;
     void *arg;
 
     psub = isrFetch (vectorNumber,&arg);
@@ -387,7 +459,7 @@ static int rtemsDevInterruptInUseVME (unsigned vectorNumber)
  *  macro to declare handler prototypes...
  *
  */
-static void unsolicitedHandlerEPICS(int vectorNumber)
+static void unsolicitedHandlerEPICS(void* vectorNumber, unsigned long unused)
 {
     /*
      * call epicInterruptContextMessage()

@@ -65,6 +65,11 @@ LIBCOM_API extern const char *epicsAddressTypeName[];
 extern "C" {
 #endif
 
+/**
+ * \brief user-supplied ISR function registered with devlib.
+ */
+typedef void(*devLib_ISR_t)(void* parameter);
+
 /** \brief Print a map of registered bus addresses.
  *
  * Display a table of registered bus address ranges, including the owner of
@@ -214,7 +219,7 @@ LIBCOM_API long devAllocAddress(
  */
 LIBCOM_API long devConnectInterruptVME(
     unsigned            vectorNumber,
-    void                (*pFunction)(void *),
+    devLib_ISR_t        pFunction,
     void                *parameter);
 
 /** \brief Disconnect an ISR from its VME interrupt vector.
@@ -232,7 +237,7 @@ LIBCOM_API long devConnectInterruptVME(
  */
 LIBCOM_API long devDisconnectInterruptVME(
     unsigned            vectorNumber,
-    void                (*pFunction)(void *));
+    devLib_ISR_t        pFunction);
 
 /** \brief Determine if a VME interrupt vector is in use.
  *
@@ -322,7 +327,7 @@ LIBCOM_API void devLibA24Free(void *pBlock);
  */
 LIBCOM_API long devConnectInterruptISA(
     unsigned            interruptLevel,
-    void                (*pFunction)(void *),
+    devLib_ISR_t        pFunction,
     void                *parameter);
 
 /**
@@ -334,7 +339,7 @@ LIBCOM_API long devConnectInterruptISA(
  */
 LIBCOM_API long devDisconnectInterruptISA(
     unsigned            interruptLevel,
-    void                (*pFunction)(void *));
+    devLib_ISR_t        pFunction);
 
 /**
  * Determine if an ISA interrupt level is in use
@@ -377,7 +382,7 @@ typedef enum {intVME, intVXI, intISA} epicsInterruptType;
 LIBCOM_API long devConnectInterrupt(
     epicsInterruptType  intType,
     unsigned            vectorNumber,
-    void                (*pFunction)(void *),
+    devLib_ISR_t        pFunction,
     void                *parameter);
 
 /**
@@ -390,7 +395,7 @@ LIBCOM_API long devConnectInterrupt(
 LIBCOM_API long devDisconnectInterrupt(
     epicsInterruptType  intType,
     unsigned            vectorNumber,
-    void                (*pFunction)(void *));
+    devLib_ISR_t        pFunction);
 
 /**
  * \note This routine has been deprecated. It exists
