@@ -99,6 +99,7 @@ void epicRtemsInit_log();
 void epicRtemsInit_net();
 void epicRtemsInit_nfs();
 void epicRtemsInit_ntp();
+void epicsRtemsInit_bootloaderenv();
 
 /*
  * Hook to allow app specific FS setup using mem file system

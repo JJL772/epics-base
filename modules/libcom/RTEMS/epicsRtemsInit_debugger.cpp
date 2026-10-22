@@ -6,7 +6,13 @@
 \*************************************************************************/
 
 #include <iostream>
+#include <bsp.h>
 
+#ifndef LIBBSP_M68K_UC5282_BSP_H
+#define HAVE_LIBDEBUGGER 1
+#endif
+
+#if HAVE_LIBDEBUGGER
 #include <rtems/rtems-debugger.h>
 #include <rtems/rtems-debugger-remote-tcp.h>
 
@@ -69,8 +75,12 @@ static int rtemsDebuggerInitialize() {
     return 0;
 }
 
+#endif
+
 void epicRtemsInit_debugger() {
+#if HAVE_LIBDEBUGGER
     epicsRtemsInitRegisterHandler(
         "system", "debugger", rtemsInit_Order_post_net_services + 40,
         false, rtemsDebuggerInitialize);
+#endif // HAVE_LIBDEBUGGER
 }

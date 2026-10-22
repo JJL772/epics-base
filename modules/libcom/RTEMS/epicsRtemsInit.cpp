@@ -56,7 +56,7 @@ static initLockType initLock;
 static std::once_flag handlers_make;
 static std::atomic_bool handlers_init;
 
-static constexpr bool rtems_shell_force = false;
+static constexpr bool rtems_shell_force = true;
 static constexpr bool rtems_shell_ioc_error = true;
 
 static void make_handlers() {
@@ -204,6 +204,7 @@ static void epicsRtemsInit_register() {
     epicRtemsInit_net();
     epicRtemsInit_nfs();
     epicRtemsInit_ntp();
+    epicsRtemsInit_bootloaderenv();
 }
 
 static void update_env(const char* env, const char* domain, const char* name) {

@@ -17,7 +17,8 @@
 
 static int rtemsNFSInitialize() {
     /*
-     * Split argument string of form nfs_server:nfs_export:<path>
+     * Split argument string of form [nfs_version::]nfs_server:nfs_export:<path>
+     * The nfs_version component will determine the parameters passed to `mount`.
      * The nfs_export component will be used as:
      *      - the path to the directory exported from the NFS server
      *      - the local mount point
@@ -31,6 +32,14 @@ static int rtemsNFSInitialize() {
      */
     auto envp = getenv("RTEMS_NFS_MOUNT_PATH");
     if (envp != nullptr) {
+        /* Defaults to NFS 4.1 */
+        const char* mountOpts = "nfs4,minorversion=1";
+        if (strncmp(envp, "nfs4::", 6) == 0) {
+            mountOpts = "nfsv4";
+        } else if (strncmp(envp, "nfs3::", 6) == 0) {
+            mountOpts = "nfsv3";
+        }
+
         std::string env = envp;
         auto last_colon = env.find_last_of(':');
         auto nfs_source = env.substr(0, last_colon);
@@ -42,7 +51,7 @@ static int rtemsNFSInitialize() {
         std::filesystem::create_directories(nfs_target);
         auto r = mount(
             nfs_source.c_str(), nfs_target.c_str(),
-            "nfs", RTEMS_FILESYSTEM_READ_WRITE, "nfsv4,minorversion=1");
+            "nfs", RTEMS_FILESYSTEM_READ_WRITE, mountOpts);
         if (r < 0) {
             std::cout << "error: mount: nfs: " << std::strerror(errno)
                       << std::endl;

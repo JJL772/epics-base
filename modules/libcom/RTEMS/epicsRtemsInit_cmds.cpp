@@ -23,6 +23,8 @@
 
 #ifndef RTEMS_LEGACY_STACK
 #include <rtems/bsd/bsd.h>
+#else
+#include <rtems/rtems_bsdnet.h>
 #endif
 
 #include "errlog.h"

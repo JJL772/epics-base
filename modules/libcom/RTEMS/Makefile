@@ -32,8 +32,13 @@ rtemsCom_SRCS += epicsRtemsInit_filesys.cpp
 rtemsCom_SRCS += epicsRtemsInit_ioc.cpp
 rtemsCom_SRCS += epicsRtemsInit_log.cpp
 rtemsCom_SRCS += epicsRtemsInit_memfs.c
+ifeq ($(RTEMS_NETWORKING),bsd)
 rtemsCom_SRCS += epicsRtemsInit_net.cpp
+else
+rtemsCom_SRCS += epicsRtemsInit_net_legacy.cpp
+endif
 rtemsCom_SRCS += epicsRtemsInit_nfs.cpp
+rtemsCom_SRCS += epicsRtemsInit_netboot.cpp
 rtemsCom_SRCS += epicsRtemsInit_ntp.cpp
 else
 ifeq ($(RTEMS_QEMU_FIXUPS),YES)
