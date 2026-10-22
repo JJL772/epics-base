@@ -149,6 +149,11 @@ ifndef RTEMS_INIT
 RTEMS_INIT = legacy
 endif
 
+OP_SYS_DEPLIBS = rtemsCom
+PROD_DEPLIBS += $(foreach lib, $(OP_SYS_DEPLIBS), \
+  $(firstword $(wildcard $(addsuffix /$(LIB_PREFIX)$(lib)$(LIB_SUFFIX), \
+    $($(lib)_DIR) $(SHRLIB_SEARCH_DIRS)))))
+
 #--------------------------------------------------
 # Operating system compile & link flags
 OP_SYS_CFLAGS += -D__LINUX_ERRNO_EXTENSIONS__
@@ -192,7 +197,7 @@ POSIX_CPPFLAGS_posix = -D_GNU_SOURCE -D_DEFAULT_SOURCE
 POSIX_CPPFLAGS = $(POSIX_CPPFLAGS_$(OS_API))
 
 ifneq ($(RTEMS_VERSION),5)
-LDLIBS_posix_NET_debugger = -ldebugger
+#LDLIBS_posix_NET_debugger = -ldebugger
 endif
 
 OP_SYS_LDLIBS_posix_NET_yes = -ltftpfs -lz -ltelnetd
