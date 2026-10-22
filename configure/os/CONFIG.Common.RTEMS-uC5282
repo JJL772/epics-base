@@ -22,5 +22,5 @@ MUNCH_SUFFIX = .boot
 define MUNCH_CMD
 	$(RTEMS_TOOLS)/bin/$(OBJCOPY_FOR_TARGET) -O binary -R .comment -S $< $@
 endef
-
+RTEMS_INIT = new
 include $(CONFIG)/os/CONFIG.Common.RTEMS
